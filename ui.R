@@ -19,45 +19,84 @@ shinyUI(fluidPage(
   
   tabsetPanel(
     
-    ## First Tab
+    ## First Tab: S&P - Valuation
     
-    tabPanel("Overview",
+    
+    tabPanel("S&P500 - Valuation",
              
              tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/jQuery.print/1.6.0/jQuery.print.min.js")),
              
              fluidRow(
                column(2,
                       awesomeRadio(
-                        inputId = "metric",
+                        inputId = "metric_SP_valuation",
                         label = "Metric",
-                        choices = c("10Yr Yield" = 'DGS10' ,
-                                    "EV/Sales" ='.',
-                                    "PE-LTM" ='.',
-                                    "PE-NTM"= '.'),
-                        selected = "DGS10",
+                        choices = c("S&P500" = 'SP500' ,
+                                    "EV/Sales - LTM " ='.',
+                                    "PE - LTM" ='.',
+                                    "PE - NTM"= '.'),
+                        selected = "SP500",
                         status = "warning"
                       ),
-                      dateInput("start",
+                      dateInput("start_sp_val",
                                 "Start Date",
                                 "2020-01-01",
                                 format = "yyyy-mm-dd"
                       ),
-                      dateInput("end",
+                      dateInput("end_sp_val",
                                 "End Date",
                                 "2022-04-18",
                                 format = "yyyy-mm-dd"
                       ),
-                      actionButton("go", "Submit"),
-                      actionButton("go", "Print", onclick = "$('#distPlot').print();")
+                      actionButton("go", "Print", onclick = "$('#distPlot_sp_val').print();")
                ),
                column(10,
-                      plotOutput('distPlot')
+                      plotOutput('distPlot_sp_val')
                )
              )
     ),
     
     
-    #### Second Tab
+    ## Second Tab: S&P - Growth
+    
+  
+    tabPanel("S&P500 - Growth",
+             
+             tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/jQuery.print/1.6.0/jQuery.print.min.js")),
+             
+             fluidRow(
+               column(2,
+                      awesomeRadio(
+                        inputId = "metric_SP_growth",
+                        label = "Metric",
+                        choices = c("Sales PS" = 'A' ,
+                                    "Sales Growth" ='B',
+                                    "EPS- NTM" ='C',
+                                    "EPS"= 'D'),
+                        selected = "A",
+                        status = "warning"
+                      ),
+                      dateInput("start_sp_growth",
+                                "Start Date",
+                                "2020-01-01",
+                                format = "yyyy-mm-dd"
+                      ),
+                      dateInput("end_sp_growth",
+                                "End Date",
+                                "2022-04-18",
+                                format = "yyyy-mm-dd"
+                      ),
+                      actionButton("go", "Print", onclick = "$('#distPlot_sp_growth').print();")
+               ),
+               column(10,
+                      plotOutput('distPlot_sp_growth')
+               )
+             )
+    ),
+    
+    
+    
+    ## Third Tab: Rates
     
     tabPanel("Rates",
              
@@ -66,36 +105,36 @@ shinyUI(fluidPage(
              fluidRow(
                column(2,
                       awesomeRadio(
-                        inputId = "metric2",
+                        inputId = "metric_rates",
                         label = "Metric",
                         choices = c("3mo Tbill" = 'DTB3' ,
                                     "2-10 Spread" ='T10Y2Y',
+                                    "10Yr Yield" =  'DGS10',
                                     "30Y Mortgage" ='MORTGAGE30US'),
                         
                         selected = "DTB3",
                         status = "warning"
                       ),
-                      dateInput("start2",
+                      dateInput("start_rates",
                                 "Start Date",
                                 "2020-01-01",
                                 format = "yyyy-mm-dd"
                       ),
-                      dateInput("end2",
+                      dateInput("end_rates",
                                 "End Date",
                                 "2022-04-18",
                                 format = "yyyy-mm-dd"
                       ),
-                      actionButton("go", "Submit"),
-                      actionButton("go", "Print", onclick = "$('#distPlot3').print();")
+                      actionButton("go", "Print", onclick = "$('#distPlot_rates').print();")
                ),
                column(10,
-                      plotOutput('distPlot2'))
+                      plotOutput('distPlot_rates'))
              )
              
              
     ),
     
-    ## Third Tab
+    ## Fourth Tab: Inflation
     
     tabPanel("Inflation",
              
@@ -104,30 +143,31 @@ shinyUI(fluidPage(
              fluidRow(
                column(2,
                       awesomeRadio(
-                        inputId = "metric3",
+                        inputId = "metric_inflation",
                         label = "Metric",
-                        choices = c("10Y TIPS" = 'DFII10' ,
-                                    "10Y Breakeven Inflation" ='T10YIE',
-                                    "5Y Breakeven Inflation" ='T5YIE',
-                                    "5,5 Forward Inflation"= 'T5YIFR'),
+                        choices = c( "5Y Breakeven Inflation" ='T5YIE',
+                                     "10Y Breakeven Inflation" ='T10YIE',
+                                     "10Y TIPS" = 'DFII10',
+                                     "5,5 Forward Inflation"= 'T5YIFR',
+                                     "CPI" = "CPIAUCSL",
+                                     "PPI" = "PPIACO"),
                         selected = "DFII10",
                         status = "warning"
                       ),
-                      dateInput("start3",
+                      dateInput("start_inflation",
                                 "Start Date",
                                 "2020-01-01",
                                 format = "yyyy-mm-dd"
                       ),
-                      dateInput("end3",
+                      dateInput("end_inflation",
                                 "End Date",
                                 "2022-04-18",
                                 format = "yyyy-mm-dd"
                       ),
-                      actionButton("go", "Submit"),
-                      actionButton("go", "Print", onclick = "$('#distPlot2').print();")
+                      actionButton("go", "Print", onclick = "$('#distPlot3').print();")
                ),
                column(10,
-                      plotOutput('distPlot3'))
+                      plotOutput('distPlot_inflation'))
              )
     )
     
