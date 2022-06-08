@@ -50,8 +50,9 @@ shinyUI(fluidPage(
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_sp_val').print();")
                ),
-               column(10,
-                      plotOutput('distPlot_sp_val')
+               column(width = 8,
+                      plotOutput('distPlot_sp_val'),
+                      verbatimTextOutput("text_sp_val")
                )
              )
     ),
@@ -89,7 +90,8 @@ shinyUI(fluidPage(
                       actionButton("go", "Print", onclick = "$('#distPlot_sp_growth').print();")
                ),
                column(10,
-                      plotOutput('distPlot_sp_growth')
+                      plotOutput('distPlot_sp_growth'),
+                      verbatimTextOutput("text_sp_growth")
                )
              )
     ),
@@ -128,9 +130,10 @@ shinyUI(fluidPage(
                       actionButton("go", "Print", onclick = "$('#distPlot_rates').print();")
                ),
                column(10,
-                      plotOutput('distPlot_rates'))
+                      plotOutput('distPlot_rates'),
+                      verbatimTextOutput("text_rates")
              )
-             
+             )
              
     ),
     
@@ -164,10 +167,48 @@ shinyUI(fluidPage(
                                 "2022-04-18",
                                 format = "yyyy-mm-dd"
                       ),
-                      actionButton("go", "Print", onclick = "$('#distPlot3').print();")
+                      actionButton("go", "Print", onclick = "$('#distPlot_inflation').print();")
                ),
                column(10,
-                      plotOutput('distPlot_inflation'))
+                      plotOutput('distPlot_inflation'),
+                      verbatimTextOutput("text_inflation")
+             )
+             )
+    ),
+    
+    
+    ## Fift Tab: Currency
+    
+    tabPanel("Currency",
+             
+             tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/jQuery.print/1.6.0/jQuery.print.min.js")),
+             
+             fluidRow(
+               column(2,
+                      awesomeRadio(
+                        inputId = "metric_currency",
+                        label = "Metric",
+                        choices = c( "USD Index-Adv" ='DTWEXAFEGS',
+                                     "USD Index-Broad" ='DTWEXBGS'),
+                        selected = "DTWEXAFEGS",
+                        status = "warning"
+                      ),
+                      dateInput("start_currency",
+                                "Start Date",
+                                "2020-01-01",
+                                format = "yyyy-mm-dd"
+                      ),
+                      dateInput("end_currency",
+                                "End Date",
+                                "2022-04-18",
+                                format = "yyyy-mm-dd"
+                      ),
+                      actionButton("go", "Print", onclick = "$('#distPlot_currency').print();")
+               ),
+               column(10,
+                      plotOutput('distPlot_currency'),
+                      verbatimTextOutput("text_currency")
+             )
              )
     )
     
