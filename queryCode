@@ -1,0 +1,34 @@
+Formulas:
+-2AY means go back 2 years...
+
+EV/Sales LTM:
+FMA_EVAL_SALES(LTM,-2AY,0,D)
+
+PE LTM:
+FMA_PE(LTMA,-2AY,0,D)
+
+PE NTM:
+FG_PE_NTM(-2AY,0,D,90,0)
+
+EPS NTM:
+FMA_EPS(NTMA,-2AY,0,D)
+
+Sales PS Growth:
+FG_SALES_1YGR(-2AY,0,D)
+
+
+time_series_endpoint  <- 'https://api.factset.com/formula-api/v1/time-series'
+request = list(data = list(ids=list("SP50"),
+                           formulas=list("FMA_EVAL_SALES(LTM,-2AY,0,D)"),
+                           flatten="Y"))
+                           
+response  <- httr::POST(time_series_endpoint ,authenticate(username,password,type="basic"),body=(request),
+                        add_headers(Accept='application/json'),encode='json')
+
+output <- rawToChar(response$content)
+prettify(output, indent = 2)
+json <- fromJSON(output)[['data']]
+df <- data.frame(json) 
+df <- df[ , c(4,2)]
+names(df)[2] <- 'values'
+df$date <- as.Date(df$date)
