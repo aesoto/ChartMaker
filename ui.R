@@ -70,11 +70,10 @@ shinyUI(fluidPage(
                       awesomeRadio(
                         inputId = "metric_SP_growth",
                         label = "Metric",
-                        choices = c("Sales PS" = 'A' ,
-                                    "Sales Growth" ='B',
-                                    "EPS- NTM" ='C',
-                                    "EPS"= 'D'),
-                        selected = "A",
+                        choices = c("Sales Growth" = "FG_SALES_1YGR(-40D,0,0)",
+                                    "EPS- NTM" ='FMA_EPS(NTMA,0,-40D,D)',
+                                    "EPS-LMT"= 'FMA_EPS(LTM,0,-40D,D)'),
+                        selected = "Sales Growth",
                         status = "warning"
                       ),
                       dateInput("start_sp_growth",
