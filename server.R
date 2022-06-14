@@ -107,10 +107,9 @@ shinyServer(function(input, output) {
   
   timeSeries_sp_growth <- reactive({
     
-    metricName <- ifelse(input$metric_SP_growth == "A", "Sales PS ", 
-                         ifelse(input$metric_SP_growth == "B", "Sales Growth",
-                                ifelse(input$metric_SP_growth == "C", "EPS- NTM",
-                                       ifelse(input$metric_SP_growth == "D", "EPS",NULL))))
+    metricName <- ifelse(input$metric_SP_growth == "Sales Growth" ,"FG_SALES_1YGR(-40D,0,0)",
+                                ifelse(input$metric_SP_growth == "EPS- NTM", 'FMA_EPS(NTMA,0,-40D,D)',
+                                       ifelse(input$metric_SP_growth == "EPS-LMT", 'FMA_EPS(LTM,0,-40D,D)',NULL)))
     
     timeSeries <- fredr(input$metric_SP_growth, 
                         observation_start = input$start_sp_growth,
