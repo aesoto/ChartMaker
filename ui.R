@@ -50,7 +50,11 @@ shinyUI(fluidPage(
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_sp_val').print();")
                ),
-               column(width = 8,
+              
+              
+               column(width = 10,
+                      br(),
+                      br(),
                       plotOutput('distPlot_sp_val')
                )
              )
@@ -88,6 +92,8 @@ shinyUI(fluidPage(
                       actionButton("go", "Print", onclick = "$('#distPlot_sp_growth').print();")
                ),
                column(10,
+                      br(),
+                      br(),
                       plotOutput('distPlot_sp_growth')
                )
              )
@@ -109,7 +115,8 @@ shinyUI(fluidPage(
                         choices = c("3mo Tbill" = "3mo Tbill",
                                     "2-10 Spread" = "2-10 Spread",
                                     "10Yr Yield" =  "10Yr Yield",
-                                    "30Y Mortgage" = "30Y Mortgage"),
+                                    "30Y Mortgage" = "30Y Mortgage",
+                                    "High Yield" = "High Yield"),
                         
                         selected = "3mo Tbill",
                         status = "warning"
@@ -127,6 +134,8 @@ shinyUI(fluidPage(
                       actionButton("go", "Print", onclick = "$('#distPlot_rates').print();")
                ),
                column(10,
+                      br(),
+                      br(),
                       plotOutput('distPlot_rates')
              )
              )
@@ -166,6 +175,8 @@ shinyUI(fluidPage(
                       actionButton("go", "Print", onclick = "$('#distPlot_inflation').print();")
                ),
                column(10,
+                      br(),
+                      br(),
                       plotOutput('distPlot_inflation')
              )
              )
@@ -201,6 +212,8 @@ shinyUI(fluidPage(
                       actionButton("go", "Print", onclick = "$('#distPlot_currency').print();")
                ),
                column(10,
+                      br(),
+                      br(),
                       plotOutput('distPlot_currency')
              )
              )
@@ -219,7 +232,7 @@ shinyUI(fluidPage(
                         label = "Metric",
                         choices = c( "FF Rates" ="EFFR",
                                      "Discount Rate" = "DPCREDIT",
-                                      "Personal Loans" = "TERMCBPER2YNS",
+                                      "Personal Loans" = "TERMCBPER24NS",
                                      "Prime Rate" = "DPRIME"),
                         selected = "EFFR",
                         status = "warning"
@@ -237,6 +250,8 @@ shinyUI(fluidPage(
                       actionButton("go", "Print", onclick = "$('#distPlot_liquidity').print();")
                ),
                column(10,
+                      br(),
+                      br(),
                       plotOutput('distPlot_liquidity')
                )
              )
