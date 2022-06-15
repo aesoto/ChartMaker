@@ -9,7 +9,7 @@ library(shiny)
 library(fredr)
 library(here)
 fredr_set_key('dad071a33ef9414bb0a759835d9ec507')
-
+#source('FSquery.R') 
 
 shinyServer(function(input, output) {
   
@@ -18,14 +18,34 @@ shinyServer(function(input, output) {
   
   timeSeries_sp_val <- reactive({
     
-    if (input$metric_SP_valuation == "SP500"){metricName <- "S&P500 - Valuation"}
     
-    timeSeries <- fredr(input$metric_SP_valuation, 
+    days <- input$end_sp_val -input$start_sp_val
+    
+    metricName2 <- ifelse(input$metric_SP_valuation == "S&P500", "SP500",
+                         ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM,", days,",0,D)", sep=""),
+                                ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,", days,",0,D)", sep=""),
+                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(",days,",0,D,90,0)", sep=""),NULL))))
+    
+   
+    
+    if(input$metric_SP_valuation == "S&P500"){
+    timeSeries <- fredr(metricName2, 
                         observation_start = input$start_sp_val,
                         observation_end = input$end_sp_val) %>%
       drop_na() %>%
       select(1,3) %>%
       rename(Close = 2)
+    }
+    
+    if(input$metric_SP_valuation != "S&P500"){
+      timeSeries <-  FSQuery("SP500", metricName2) %>%
+        drop_na() %>%
+        select(1,3) %>%
+        rename(Close = 2)
+    }
+    
+    
+    
     
     timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
     
@@ -34,7 +54,13 @@ shinyServer(function(input, output) {
   
   output$distPlot_sp_val <- renderPlot({
     
-    if (input$metric_SP_valuation == "SP500"){metricName <- "S&P500 - Valuation"}
+    days <- input$end_sp_val -input$start_sp_val
+    
+    metricName <- ifelse(input$metric_SP_valuation == "S&P500", "S&P500 - Valuation",
+                         ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM,", days,",0,D)", sep=""),
+                                ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,", days,",0,D)", sep=""),
+                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(", days,",0,D,90,0)", sep=""),NULL))))
+    
     
     timeSeries <- timeSeries_sp_val()
     
@@ -51,8 +77,8 @@ shinyServer(function(input, output) {
       mean <- round(mean(timeSeries$Close),1)
       
       
-      max <- paste("Maximum:", max)  
-      min <- paste("Minimum:", min)
+      max <- paste("Max.:", max)  
+      min <- paste("Min.:", min)
       mean <- paste("Average:", mean)
       #######################################################
       
@@ -106,14 +132,15 @@ shinyServer(function(input, output) {
   ## Second Tab: S&P - Growth
   
   timeSeries_sp_growth <- reactive({
+   # FG_SALES_1YGR(-40D,0,0)
     
-    metricName <- ifelse(input$metric_SP_growth == "Sales Growth" ,"FG_SALES_1YGR(-40D,0,0)",
-                                ifelse(input$metric_SP_growth == "EPS- NTM", 'FMA_EPS(NTMA,0,-40D,D)',
-                                       ifelse(input$metric_SP_growth == "EPS-LMT", 'FMA_EPS(LTM,0,-40D,D)',NULL)))
+    days <- input$end_sp_growth-input$start_sp_growth
     
-    timeSeries <- fredr(input$metric_SP_growth, 
-                        observation_start = input$start_sp_growth,
-                        observation_end = input$end_sp_growth) %>%
+    metricName2 <- ifelse(input$metric_SP_growth == "Sales Growth", paste("FG_SALES_1YGR(",days, "D,0,0)", sep = ""),
+                                ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
+                                       ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
+    
+    timeSeries <-  FSQuery("SP500", metricName2) %>%
       drop_na() %>%
       select(1,3) %>%
       rename(Close = 2)
@@ -125,14 +152,14 @@ shinyServer(function(input, output) {
   })
   
   
-  output$distPlot_SP_growth <- renderPlot({
+  output$distPlot_sp_growth <- renderPlot({
     
     timeSeries <- timeSeries_sp_growth()
+    days <- input$end_sp_growth-input$start_sp_growth
     
-    metricName <- ifelse(input$metric_SP_growth == "A", "Sales PS ", 
-                         ifelse(input$metric_SP_growth == "B", "Sales Growth",
-                                ifelse(input$metric_SP_growth == "C", "EPS- NTM",
-                                       ifelse(input$metric_SP_growth == "D", "EPS",NULL))))
+    metricName <- ifelse(input$metric_SP_growth == "Sales Growth", paste("FG_SALES_1YGR(",days, "D,0,0)", sep = ""),
+                          ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
+                                 ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
     plot <- function(){
     
     chartSeries(timeSeries,
@@ -148,8 +175,8 @@ shinyServer(function(input, output) {
     mean <- round(mean(timeSeries$Close),1)
     
     
-    max <- paste("Maximum:", max)  
-    min <- paste("Minimum:", min)
+    max <- paste("Max.:", max)  
+    min <- paste("Min.:", min)
     mean <- paste("Average:", mean)
     #######################################################
     
@@ -206,13 +233,13 @@ shinyServer(function(input, output) {
   
   timeSeries_rates <- reactive({
     
-    metricName <- ifelse(input$metric_rates == "DTB3", "3mo Tbill", 
-                         ifelse(input$metric_rates == 'T10Y2Y', "2-10 Spread",
-                                ifelse(input$metric_rates == 'MORTGAGE30US', "30Y Mortgage",
-                                       ifelse(input$metric_rates == 'DGS10', "10Yr Yield", NULL))))
+    metricName2 <- ifelse(input$metric_rates == "3mo Tbill", "DTB3",
+                         ifelse(input$metric_rates == "2-10 Spread", 'T10Y2Y',
+                                ifelse(input$metric_rates == "30Y Mortgage", 'MORTGAGE30US',
+                                       ifelse(input$metric_rates == "10Yr Yield",'DGS10', NULL))))
     
     
-    timeSeries <- fredr(input$metric_rates, 
+    timeSeries <- fredr(metricName2, 
                         observation_start = input$start_rates,
                         observation_end = input$end_rates) %>%
       drop_na() %>%
@@ -231,10 +258,10 @@ shinyServer(function(input, output) {
     
     
     
-    metricName <- ifelse(input$metric_rates == "DTB3", "3mo Tbill", 
-                         ifelse(input$metric_rates == 'T10Y2Y', "2-10 Spread",
-                                ifelse(input$metric_rates == 'MORTGAGE30US', "30Y Mortgage",
-                                       ifelse(input$metric_rates == 'DGS10', "10Yr Yield", NULL))))
+    metricName <- ifelse(input$metric_rates == "3mo Tbill", "3mo Tbill", 
+                         ifelse(input$metric_rates == "2-10 Spread", "2-10 Spread",
+                                ifelse(input$metric_rates == "30Y Mortgage", "30Y Mortgage",
+                                       ifelse(input$metric_rates == "10Yr Yield", "10Yr Yield", NULL))))
     
     
     timeSeries <- timeSeries_rates()
@@ -254,8 +281,8 @@ shinyServer(function(input, output) {
     mean <- round(mean(timeSeries$Close),1)
     
     
-    max <- paste("Maximum:", max)  
-    min <- paste("Minimum:", min)
+    max <- paste("Max.:", max)  
+    min <- paste("Min.:", min)
     mean <- paste("Average:", mean)
     #######################################################
     
@@ -361,8 +388,8 @@ shinyServer(function(input, output) {
     mean <- round(mean(timeSeries$Close),1)
     
     
-    max <- paste("Maximum:", max)  
-    min <- paste("Minimum:", min)
+    max <- paste("Max.:", max)  
+    min <- paste("Min.:", min)
     mean <- paste("Average:", mean)
     #######################################################
     
@@ -460,8 +487,8 @@ shinyServer(function(input, output) {
     mean <- round(mean(timeSeries$Close),1)
     
     
-    max <- paste("Maximum:", max)  
-    min <- paste("Minimum:", min)
+    max <- paste("Max.:", max)  
+    min <- paste("Min.:", min)
     mean <- paste("Average:", mean)
     #######################################################
     
@@ -506,5 +533,94 @@ shinyServer(function(input, output) {
     plot()
   })
  
+  ## sixth Tab: Liquidity
+  
+  
+  timeSeries_liquidity <- reactive({
+    
+     
+    timeSeries <- fredr(input$metric_liquidity, 
+                        observation_start = input$start_liquidity,
+                        observation_end = input$end_liquidity) %>%
+      drop_na() %>%
+      select(1,3) %>%
+      rename(Close = 2)
+    
+    timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
+    
+    
+  })
+  
+  
+  
+  
+  output$distPlot_liquidity <- renderPlot({
+    
+    metricName <- ifelse(input$metric_liquidity == "EFFR", "FF Rates", 
+                         ifelse(input$metric_liquidity == "DPCREDIT", "Discount Rate",
+                                ifelse(input$metric_liquidity == "TERMCBPER2YNS", "Personal Loans",
+                                       ifelse(input$metric_liquidity == "DPRIME", "Prime Rate",NULL))))
+    
+    
+    timeSeries <-timeSeries_liquidity()
+    
+    plot <- function(){
+      
+      chartSeries(timeSeries,
+                  name = metricName,
+                  type="line",
+                  theme=chartTheme('white'))
+      
+      
+      max <- round(max(timeSeries$Close),1)
+      min <- round(min(timeSeries$Close),1)
+      mean <- round(mean(timeSeries$Close),1)
+      
+      
+      max <- paste("Max.:", max)  
+      min <- paste("Min.:", min)
+      mean <- paste("Average:", mean)
+      #######################################################
+      
+      timeSeries <- as.data.frame(timeSeries)
+      timeSeries$date <- as_date(row.names(timeSeries))
+      
+      max_date <- max(timeSeries$date)
+      min_date <- min(timeSeries$date)
+      
+      ### Difference selected period
+      
+      one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
+      
+      period <- max_date - min_date
+      period
+      
+      change <- (one$Close[2] - one$Close[1]) / one$Close[1]
+      change <- round(change*100,2)
+      
+      change <- paste("Selected period change:", change, "%")
+      
+      ############################################################################
+      ## one year
+      
+      max_date <- max(timeSeries$date)
+      one_year <- max_date -365
+      
+      one_year <- subset(timeSeries, timeSeries$date >=  one_year)
+      
+      one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
+      
+      change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
+      change_1year*100
+      
+      change_1year <-  paste("Change 1 year:", round(change_1year*100,2), "%")
+      
+      text <- paste(max, min, mean, change, change_1year)
+      
+      mtext(text, side=1, outer=FALSE, cex = 0.75)
+    }
+    
+    plot()
+  })
   
 })
