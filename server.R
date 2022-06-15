@@ -79,7 +79,7 @@ shinyServer(function(input, output) {
       
       max <- paste("Max.:", max)  
       min <- paste("Min.:", min)
-      mean <- paste("Average:", mean)
+      mean <- paste("Avg.:", mean)
       #######################################################
       
       timeSeries <- as.data.frame(timeSeries)
@@ -98,7 +98,7 @@ shinyServer(function(input, output) {
       change <- (one$Close[2] - one$Close[1]) / one$Close[1]
       change <- round(change*100,2)
       
-      change <- paste("Selected period change:", change, "%")
+      change <- paste("Period Change:", change, "%")
       
       ############################################################################
       ## one year
@@ -113,9 +113,11 @@ shinyServer(function(input, output) {
       change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
       change_1year*100
       
-      change_1year <-  paste("Change 1 year:", round(change_1year*100,2), "%")
+      if(input$end_sp_val - input$start_sp_val >= 365){
+      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+      }else{change_1year <-  paste("1Y Change:", "NA")}
       
-      text <- paste(max, min, mean, change, change_1year)
+      text <- paste(max, min, mean, change, change_1year, sep = "     ")
       
       
       mtext(text, side=1, outer=FALSE, cex = 0.75)
@@ -177,7 +179,7 @@ shinyServer(function(input, output) {
     
     max <- paste("Max.:", max)  
     min <- paste("Min.:", min)
-    mean <- paste("Average:", mean)
+    mean <- paste("Avg.:", mean)
     #######################################################
     
     timeSeries <- as.data.frame(timeSeries)
@@ -196,7 +198,7 @@ shinyServer(function(input, output) {
     change <- (one$Close[2] - one$Close[1]) / one$Close[1]
     change <- round(change*100,2)
     
-    change <- paste("Selected period change:", change, "%")
+    change <- paste("Period Change:", change, "%")
     
     ############################################################################
     ## one year
@@ -211,9 +213,11 @@ shinyServer(function(input, output) {
     change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
     change_1year*100
     
-    change_1year <-  paste("Change 1 year:", round(change_1year*100,2), "%")
+    if(input$end_sp_growth - input$start_sp_growth >= 365){
+      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+    }else{change_1year <-  paste("1Y Change:", "NA")}
     
-    text <- paste(max, min, mean, change, change_1year)
+    text <- paste(max, min, mean, change, change_1year, sep = "     ")
     
     mtext(text, side=1, outer=FALSE, cex = 0.75)
     
@@ -236,7 +240,8 @@ shinyServer(function(input, output) {
     metricName2 <- ifelse(input$metric_rates == "3mo Tbill", "DTB3",
                          ifelse(input$metric_rates == "2-10 Spread", 'T10Y2Y',
                                 ifelse(input$metric_rates == "30Y Mortgage", 'MORTGAGE30US',
-                                       ifelse(input$metric_rates == "10Yr Yield",'DGS10', NULL))))
+                                       ifelse(input$metric_rates == "10Yr Yield",'DGS10',
+                                              ifelse(input$metric_rates == 'High Yield' ,"BAMLH0A0HYM2EY",NULL)))))
     
     
     timeSeries <- fredr(metricName2, 
@@ -261,8 +266,8 @@ shinyServer(function(input, output) {
     metricName <- ifelse(input$metric_rates == "3mo Tbill", "3mo Tbill", 
                          ifelse(input$metric_rates == "2-10 Spread", "2-10 Spread",
                                 ifelse(input$metric_rates == "30Y Mortgage", "30Y Mortgage",
-                                       ifelse(input$metric_rates == "10Yr Yield", "10Yr Yield", NULL))))
-    
+                                       ifelse(input$metric_rates == "10Yr Yield", "10Yr Yield", 
+                                              ifelse(input$metric_rates == 'High Yield' ,'High Yield',NULL)))))
     
     timeSeries <- timeSeries_rates()
     
@@ -283,7 +288,7 @@ shinyServer(function(input, output) {
     
     max <- paste("Max.:", max)  
     min <- paste("Min.:", min)
-    mean <- paste("Average:", mean)
+    mean <- paste("Avg.:", mean)
     #######################################################
     
     timeSeries <- as.data.frame(timeSeries)
@@ -302,7 +307,7 @@ shinyServer(function(input, output) {
     change <- (one$Close[2] - one$Close[1]) / one$Close[1]
     change <- round(change*100,2)
     
-    change <- paste("Selected period change:", change, "%")
+    change <- paste("Period Change:", change, "%")
     
     ############################################################################
     ## one year
@@ -317,9 +322,11 @@ shinyServer(function(input, output) {
     change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
     change_1year*100
     
-    change_1year <-  paste("Change 1 year:", round(change_1year*100,2), "%")
+    if(input$end_rates - input$start_rates >= 365){
+      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+    }else{change_1year <-  paste("1Y Change:", "NA")}
     
-    text <- paste(max, min, mean, change, change_1year)
+    text <- paste(max, min, mean, change, change_1year, sep = "     ")
     mtext(text, side=1, outer=FALSE, cex = 0.75)
     
   }
@@ -390,7 +397,7 @@ shinyServer(function(input, output) {
     
     max <- paste("Max.:", max)  
     min <- paste("Min.:", min)
-    mean <- paste("Average:", mean)
+    mean <- paste("Avg.:", mean)
     #######################################################
     
     timeSeries <- as.data.frame(timeSeries)
@@ -409,7 +416,7 @@ shinyServer(function(input, output) {
     change <- (one$Close[2] - one$Close[1]) / one$Close[1]
     change <- round(change*100,2)
     
-    change <- paste("Selected period change:", change, "%")
+    change <- paste("Period Change:", change, "%")
     
     ############################################################################
     ## one year
@@ -424,9 +431,11 @@ shinyServer(function(input, output) {
     change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
     change_1year*100
     
-    change_1year <-  paste("Change 1 year:", round(change_1year*100,2), "%")
+    if(input$end_inflation - input$start_inflation >= 365){
+      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+    }else{change_1year <-  paste("1Y Change:", "NA")}
     
-    text <- paste(max, min, mean, change, change_1year)
+    text <- paste(max, min, mean, change, change_1year, sep = "     ")
     
     mtext(text, side=1, outer=FALSE, cex = 0.75)
     
@@ -489,7 +498,7 @@ shinyServer(function(input, output) {
     
     max <- paste("Max.:", max)  
     min <- paste("Min.:", min)
-    mean <- paste("Average:", mean)
+    mean <- paste("Avg.:", mean)
     #######################################################
     
     timeSeries <- as.data.frame(timeSeries)
@@ -508,7 +517,7 @@ shinyServer(function(input, output) {
     change <- (one$Close[2] - one$Close[1]) / one$Close[1]
     change <- round(change*100,2)
     
-    change <- paste("Selected period change:", change, "%")
+    change <- paste("Period Change:", change, "%")
     
     ############################################################################
     ## one year
@@ -523,9 +532,11 @@ shinyServer(function(input, output) {
     change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
     change_1year*100
     
-    change_1year <-  paste("Change 1 year:", round(change_1year*100,2), "%")
+    if(input$end_currency - input$start_currency >= 365){
+      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+    }else{change_1year <-  paste("1Y Change:", "NA")}
     
-    text <- paste(max, min, mean, change, change_1year)
+    text <- paste(max, min, mean, change, change_1year, sep = "     ")
     
     mtext(text, side=1, outer=FALSE, cex = 0.75)
     }
@@ -558,7 +569,7 @@ shinyServer(function(input, output) {
     
     metricName <- ifelse(input$metric_liquidity == "EFFR", "FF Rates", 
                          ifelse(input$metric_liquidity == "DPCREDIT", "Discount Rate",
-                                ifelse(input$metric_liquidity == "TERMCBPER2YNS", "Personal Loans",
+                                ifelse(input$metric_liquidity == "TERMCBPER24NS", "Personal Loans",
                                        ifelse(input$metric_liquidity == "DPRIME", "Prime Rate",NULL))))
     
     
@@ -579,7 +590,7 @@ shinyServer(function(input, output) {
       
       max <- paste("Max.:", max)  
       min <- paste("Min.:", min)
-      mean <- paste("Average:", mean)
+      mean <- paste("Avg.:", mean)
       #######################################################
       
       timeSeries <- as.data.frame(timeSeries)
@@ -598,7 +609,7 @@ shinyServer(function(input, output) {
       change <- (one$Close[2] - one$Close[1]) / one$Close[1]
       change <- round(change*100,2)
       
-      change <- paste("Selected period change:", change, "%")
+      change <- paste("Period Change:", change, "%")
       
       ############################################################################
       ## one year
@@ -613,9 +624,11 @@ shinyServer(function(input, output) {
       change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
       change_1year*100
       
-      change_1year <-  paste("Change 1 year:", round(change_1year*100,2), "%")
+      if(input$end_liquidity - input$start_liquidity >= 365){
+        change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+      }else{change_1year <-  paste("1Y Change:", "NA")}
       
-      text <- paste(max, min, mean, change, change_1year)
+      text <- paste(max, min, mean, change, change_1year, sep = "     ")
       
       mtext(text, side=1, outer=FALSE, cex = 0.75)
     }
