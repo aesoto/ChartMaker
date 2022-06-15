@@ -31,28 +31,27 @@ shinyUI(fluidPage(
                       awesomeRadio(
                         inputId = "metric_SP_valuation",
                         label = "Metric",
-                        choices = c("S&P500" = 'SP500' ,
-                                    "EV/Sales - LTM " ='.',
-                                    "PE - LTM" ='.',
-                                    "PE - NTM"= '.'),
-                        selected = "SP500",
+                        choices = c("S&P500" = 'S&P500' ,
+                                    "EV/Sales - LTM" = "EV/Sales - LTM" ,
+                                    "PE - LTM" = "PE - LTM",
+                                    "PE - NTM"= "PE - NTM"),
+                        selected = "S&P500",
                         status = "warning"
                       ),
                       dateInput("start_sp_val",
                                 "Start Date",
-                                "2020-01-01",
+                                Sys.Date() - years(1),
                                 format = "yyyy-mm-dd"
                       ),
                       dateInput("end_sp_val",
                                 "End Date",
-                                "2022-04-18",
+                                Sys.Date(),
                                 format = "yyyy-mm-dd"
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_sp_val').print();")
                ),
                column(width = 8,
-                      plotOutput('distPlot_sp_val'),
-                      verbatimTextOutput("text_sp_val")
+                      plotOutput('distPlot_sp_val')
                )
              )
     ),
@@ -70,27 +69,26 @@ shinyUI(fluidPage(
                       awesomeRadio(
                         inputId = "metric_SP_growth",
                         label = "Metric",
-                        choices = c("Sales Growth" = "FG_SALES_1YGR(-40D,0,0)",
-                                    "EPS- NTM" ='FMA_EPS(NTMA,0,-40D,D)',
-                                    "EPS-LMT"= 'FMA_EPS(LTM,0,-40D,D)'),
+                        choices = c("Sales Growth" = "Sales Growth",
+                                    "EPS-NTM" = "EPS-NTM" ,
+                                    "EPS-LMT" = "EPS-LMT"),
                         selected = "Sales Growth",
                         status = "warning"
                       ),
                       dateInput("start_sp_growth",
                                 "Start Date",
-                                "2020-01-01",
+                                Sys.Date() - years(1),
                                 format = "yyyy-mm-dd"
                       ),
                       dateInput("end_sp_growth",
                                 "End Date",
-                                "2022-04-18",
+                                Sys.Date(),
                                 format = "yyyy-mm-dd"
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_sp_growth').print();")
                ),
                column(10,
-                      plotOutput('distPlot_sp_growth'),
-                      verbatimTextOutput("text_sp_growth")
+                      plotOutput('distPlot_sp_growth')
                )
              )
     ),
@@ -108,29 +106,28 @@ shinyUI(fluidPage(
                       awesomeRadio(
                         inputId = "metric_rates",
                         label = "Metric",
-                        choices = c("3mo Tbill" = 'DTB3' ,
-                                    "2-10 Spread" ='T10Y2Y',
-                                    "10Yr Yield" =  'DGS10',
-                                    "30Y Mortgage" ='MORTGAGE30US'),
+                        choices = c("3mo Tbill" = "3mo Tbill",
+                                    "2-10 Spread" = "2-10 Spread",
+                                    "10Yr Yield" =  "10Yr Yield",
+                                    "30Y Mortgage" = "30Y Mortgage"),
                         
-                        selected = "DTB3",
+                        selected = "3mo Tbill",
                         status = "warning"
                       ),
                       dateInput("start_rates",
                                 "Start Date",
-                                "2020-01-01",
+                                Sys.Date() - years(1),
                                 format = "yyyy-mm-dd"
                       ),
                       dateInput("end_rates",
                                 "End Date",
-                                "2022-04-18",
+                                Sys.Date(),
                                 format = "yyyy-mm-dd"
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_rates').print();")
                ),
                column(10,
-                      plotOutput('distPlot_rates'),
-                      verbatimTextOutput("text_rates")
+                      plotOutput('distPlot_rates')
              )
              )
              
@@ -158,25 +155,24 @@ shinyUI(fluidPage(
                       ),
                       dateInput("start_inflation",
                                 "Start Date",
-                                "2020-01-01",
+                                Sys.Date() - years(1),
                                 format = "yyyy-mm-dd"
                       ),
                       dateInput("end_inflation",
                                 "End Date",
-                                "2022-04-18",
+                                Sys.Date(),
                                 format = "yyyy-mm-dd"
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_inflation').print();")
                ),
                column(10,
-                      plotOutput('distPlot_inflation'),
-                      verbatimTextOutput("text_inflation")
+                      plotOutput('distPlot_inflation')
              )
              )
     ),
     
     
-    ## Fift Tab: Currency
+    ## Fifth Tab: Currency
     
     tabPanel("Currency",
              
@@ -194,20 +190,55 @@ shinyUI(fluidPage(
                       ),
                       dateInput("start_currency",
                                 "Start Date",
-                                "2020-01-01",
+                                Sys.Date() - years(1),
                                 format = "yyyy-mm-dd"
                       ),
                       dateInput("end_currency",
                                 "End Date",
-                                "2022-04-18",
+                                Sys.Date(),
                                 format = "yyyy-mm-dd"
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_currency').print();")
                ),
                column(10,
-                      plotOutput('distPlot_currency'),
-                      verbatimTextOutput("text_currency")
+                      plotOutput('distPlot_currency')
              )
+             )
+    ),
+    
+    # sixth tab:
+    
+    tabPanel("Liquidity",
+             
+             tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/jQuery.print/1.6.0/jQuery.print.min.js")),
+             
+             fluidRow(
+               column(2,
+                      awesomeRadio(
+                        inputId = "metric_liquidity",
+                        label = "Metric",
+                        choices = c( "FF Rates" ="EFFR",
+                                     "Discount Rate" = "DPCREDIT",
+                                      "Personal Loans" = "TERMCBPER2YNS",
+                                     "Prime Rate" = "DPRIME"),
+                        selected = "EFFR",
+                        status = "warning"
+                      ),
+                      dateInput("start_liquidity",
+                                "Start Date",
+                                Sys.Date() - years(1),
+                                format = "yyyy-mm-dd"
+                      ),
+                      dateInput("end_liquidity",
+                                "End Date",
+                                Sys.Date(),
+                                format = "yyyy-mm-dd"
+                      ),
+                      actionButton("go", "Print", onclick = "$('#distPlot_liquidity').print();")
+               ),
+               column(10,
+                      plotOutput('distPlot_liquidity')
+               )
              )
     )
     
