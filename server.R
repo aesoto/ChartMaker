@@ -8,8 +8,11 @@ library(shinyWidgets)
 library(shiny)
 library(fredr)
 library(here)
+library(httr)
+library(jsonlite)
+library(xts)
 fredr_set_key('dad071a33ef9414bb0a759835d9ec507')
-#source('FSquery.R') 
+source('FSquery.R') 
 
 shinyServer(function(input, output) {
   
@@ -22,25 +25,25 @@ shinyServer(function(input, output) {
     days <- input$end_sp_val -input$start_sp_val
     
     metricName2 <- ifelse(input$metric_SP_valuation == "S&P500", "SP500",
-                         ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM,", days,",0,D)", sep=""),
-                                ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,", days,",0,D)", sep=""),
-                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(",days,",0,D,90,0)", sep=""),NULL))))
+                          ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM, -", days,"D,0,D)", sep=""),
+                                 ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep=""),
+                                        ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-",days,"D,0,D,90,0)", sep=""),NULL))))
     
-   
+    
     
     if(input$metric_SP_valuation == "S&P500"){
-    timeSeries <- fredr(metricName2, 
-                        observation_start = input$start_sp_val,
-                        observation_end = input$end_sp_val) %>%
-      drop_na() %>%
-      select(1,3) %>%
-      rename(Close = 2)
+      timeSeries <- fredr(metricName2, 
+                          observation_start = input$start_sp_val,
+                          observation_end = input$end_sp_val) %>%
+        drop_na() %>%
+        select(1,3) %>%
+        rename(Close = 2)
     }
     
     if(input$metric_SP_valuation != "S&P500"){
-      timeSeries <-  FSQuery("SP500", metricName2) %>%
+      timeSeries <-  FSquery("SP50", metricName2) %>%
         drop_na() %>%
-        select(1,3) %>%
+        select(1,2) %>%
         rename(Close = 2)
     }
     
@@ -57,19 +60,19 @@ shinyServer(function(input, output) {
     days <- input$end_sp_val -input$start_sp_val
     
     metricName <- ifelse(input$metric_SP_valuation == "S&P500", "S&P500 - Valuation",
-                         ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM,", days,",0,D)", sep=""),
-                                ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,", days,",0,D)", sep=""),
-                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(", days,",0,D,90,0)", sep=""),NULL))))
+                         ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM,-", days,"D,0,D)", sep=""),
+                                ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA, -", days,"D,0,D)", sep=""),
+                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-", days,"D,0,D,90,0)", sep=""),NULL))))
     
     
     timeSeries <- timeSeries_sp_val()
     
     plot <- function(){
-    
-    chartSeries(timeSeries,
-                name = metricName,
-                type="line",
-                theme=chartTheme('white'))
+      
+      chartSeries(timeSeries,
+                  name = metricName,
+                  type="line",
+                  theme=chartTheme('white'))
       ### Text
       
       max <- round(max(timeSeries$Close),1)
@@ -114,14 +117,14 @@ shinyServer(function(input, output) {
       change_1year*100
       
       if(input$end_sp_val - input$start_sp_val >= 365){
-      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+        change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
       }else{change_1year <-  paste("1Y Change:", "NA")}
       
       text <- paste(max, min, mean, change, change_1year, sep = "     ")
       
       
       mtext(text, side=1, outer=FALSE, cex = 0.75)
-    
+      
     }
     
     plot()
@@ -134,15 +137,15 @@ shinyServer(function(input, output) {
   ## Second Tab: S&P - Growth
   
   timeSeries_sp_growth <- reactive({
-   # FG_SALES_1YGR(-40D,0,0)
+    # FG_SALES_1YGR(-40D,0,0)
     
     days <- input$end_sp_growth-input$start_sp_growth
     
     metricName2 <- ifelse(input$metric_SP_growth == "Sales Growth", paste("FG_SALES_1YGR(",days, "D,0,0)", sep = ""),
-                                ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
-                                       ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
+                          ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
+                                 ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
     
-    timeSeries <-  FSQuery("SP500", metricName2) %>%
+    timeSeries <-  FSquery("SP500", metricName2) %>%
       drop_na() %>%
       select(1,3) %>%
       rename(Close = 2)
@@ -160,67 +163,67 @@ shinyServer(function(input, output) {
     days <- input$end_sp_growth-input$start_sp_growth
     
     metricName <- ifelse(input$metric_SP_growth == "Sales Growth", paste("FG_SALES_1YGR(",days, "D,0,0)", sep = ""),
-                          ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
-                                 ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
+                         ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
+                                ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
     plot <- function(){
-    
-    chartSeries(timeSeries,
-                name = metricName,
-                type="line",
-                theme=chartTheme('white'))
-    
-    
-   
-    
-    max <- round(max(timeSeries$Close),1)
-    min <- round(min(timeSeries$Close),1)
-    mean <- round(mean(timeSeries$Close),1)
-    
-    
-    max <- paste("Max.:", max)  
-    min <- paste("Min.:", min)
-    mean <- paste("Avg.:", mean)
-    #######################################################
-    
-    timeSeries <- as.data.frame(timeSeries)
-    timeSeries$date <- as_date(row.names(timeSeries))
-    
-    max_date <- max(timeSeries$date)
-    min_date <- min(timeSeries$date)
-    
-    ### Difference selected period
-    
-    one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
-    
-    period <- max_date - min_date
-    period
-    
-    change <- (one$Close[2] - one$Close[1]) / one$Close[1]
-    change <- round(change*100,2)
-    
-    change <- paste("Period Change:", change, "%")
-    
-    ############################################################################
-    ## one year
-    
-    max_date <- max(timeSeries$date)
-    one_year <- max_date -365
-    
-    one_year <- subset(timeSeries, timeSeries$date >=  one_year)
-    
-    one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
-    
-    change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
-    change_1year*100
-    
-    if(input$end_sp_growth - input$start_sp_growth >= 365){
-      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
-    }else{change_1year <-  paste("1Y Change:", "NA")}
-    
-    text <- paste(max, min, mean, change, change_1year, sep = "     ")
-    
-    mtext(text, side=1, outer=FALSE, cex = 0.75)
-    
+      
+      chartSeries(timeSeries,
+                  name = metricName,
+                  type="line",
+                  theme=chartTheme('white'))
+      
+      
+      
+      
+      max <- round(max(timeSeries$Close),1)
+      min <- round(min(timeSeries$Close),1)
+      mean <- round(mean(timeSeries$Close),1)
+      
+      
+      max <- paste("Max.:", max)  
+      min <- paste("Min.:", min)
+      mean <- paste("Avg.:", mean)
+      #######################################################
+      
+      timeSeries <- as.data.frame(timeSeries)
+      timeSeries$date <- as_date(row.names(timeSeries))
+      
+      max_date <- max(timeSeries$date)
+      min_date <- min(timeSeries$date)
+      
+      ### Difference selected period
+      
+      one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
+      
+      period <- max_date - min_date
+      period
+      
+      change <- (one$Close[2] - one$Close[1]) / one$Close[1]
+      change <- round(change*100,2)
+      
+      change <- paste("Period Change:", change, "%")
+      
+      ############################################################################
+      ## one year
+      
+      max_date <- max(timeSeries$date)
+      one_year <- max_date -365
+      
+      one_year <- subset(timeSeries, timeSeries$date >=  one_year)
+      
+      one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
+      
+      change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
+      change_1year*100
+      
+      if(input$end_sp_growth - input$start_sp_growth >= 365){
+        change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+      }else{change_1year <-  paste("1Y Change:", "NA")}
+      
+      text <- paste(max, min, mean, change, change_1year, sep = "     ")
+      
+      mtext(text, side=1, outer=FALSE, cex = 0.75)
+      
     }
     
     plot()
@@ -231,17 +234,17 @@ shinyServer(function(input, output) {
   
   
   
-
- 
+  
+  
   ## Third Tab: Rates
   
   timeSeries_rates <- reactive({
     
     metricName2 <- ifelse(input$metric_rates == "3mo Tbill", "DTB3",
-                         ifelse(input$metric_rates == "2-10 Spread", 'T10Y2Y',
-                                ifelse(input$metric_rates == "30Y Mortgage", 'MORTGAGE30US',
-                                       ifelse(input$metric_rates == "10Yr Yield",'DGS10',
-                                              ifelse(input$metric_rates == 'High Yield' ,"BAMLH0A0HYM2EY",NULL)))))
+                          ifelse(input$metric_rates == "2-10 Spread", 'T10Y2Y',
+                                 ifelse(input$metric_rates == "30Y Mortgage", 'MORTGAGE30US',
+                                        ifelse(input$metric_rates == "10Yr Yield",'DGS10',
+                                               ifelse(input$metric_rates == 'High Yield' ,"BAMLH0A0HYM2EY",NULL)))))
     
     
     timeSeries <- fredr(metricName2, 
@@ -272,66 +275,66 @@ shinyServer(function(input, output) {
     timeSeries <- timeSeries_rates()
     
     plot <- function(){
-    chartSeries(timeSeries,
-                name = metricName,
-                type="line",
-                theme=chartTheme('white'))
+      chartSeries(timeSeries,
+                  name = metricName,
+                  type="line",
+                  theme=chartTheme('white'))
+      
+      
+      
+      timeSeries <- timeSeries_rates()
+      
+      max <- round(max(timeSeries$Close),1)
+      min <- round(min(timeSeries$Close),1)
+      mean <- round(mean(timeSeries$Close),1)
+      
+      
+      max <- paste("Max.:", max)  
+      min <- paste("Min.:", min)
+      mean <- paste("Avg.:", mean)
+      #######################################################
+      
+      timeSeries <- as.data.frame(timeSeries)
+      timeSeries$date <- as_date(row.names(timeSeries))
+      
+      max_date <- max(timeSeries$date)
+      min_date <- min(timeSeries$date)
+      
+      ### Difference selected period
+      
+      one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
+      
+      period <- max_date - min_date
+      period
+      
+      change <- (one$Close[2] - one$Close[1]) / one$Close[1]
+      change <- round(change*100,2)
+      
+      change <- paste("Period Change:", change, "%")
+      
+      ############################################################################
+      ## one year
+      
+      max_date <- max(timeSeries$date)
+      one_year <- max_date -365
+      
+      one_year <- subset(timeSeries, timeSeries$date >=  one_year)
+      
+      one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
+      
+      change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
+      change_1year*100
+      
+      if(input$end_rates - input$start_rates >= 365){
+        change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+      }else{change_1year <-  paste("1Y Change:", "NA")}
+      
+      text <- paste(max, min, mean, change, change_1year, sep = "     ")
+      mtext(text, side=1, outer=FALSE, cex = 0.75)
+      
+    }
     
-    
-  
-    timeSeries <- timeSeries_rates()
-    
-    max <- round(max(timeSeries$Close),1)
-    min <- round(min(timeSeries$Close),1)
-    mean <- round(mean(timeSeries$Close),1)
-    
-    
-    max <- paste("Max.:", max)  
-    min <- paste("Min.:", min)
-    mean <- paste("Avg.:", mean)
-    #######################################################
-    
-    timeSeries <- as.data.frame(timeSeries)
-    timeSeries$date <- as_date(row.names(timeSeries))
-    
-    max_date <- max(timeSeries$date)
-    min_date <- min(timeSeries$date)
-    
-    ### Difference selected period
-    
-    one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
-    
-    period <- max_date - min_date
-    period
-    
-    change <- (one$Close[2] - one$Close[1]) / one$Close[1]
-    change <- round(change*100,2)
-    
-    change <- paste("Period Change:", change, "%")
-    
-    ############################################################################
-    ## one year
-    
-    max_date <- max(timeSeries$date)
-    one_year <- max_date -365
-    
-    one_year <- subset(timeSeries, timeSeries$date >=  one_year)
-    
-    one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
-    
-    change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
-    change_1year*100
-    
-    if(input$end_rates - input$start_rates >= 365){
-      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
-    }else{change_1year <-  paste("1Y Change:", "NA")}
-    
-    text <- paste(max, min, mean, change, change_1year, sep = "     ")
-    mtext(text, side=1, outer=FALSE, cex = 0.75)
-    
-  }
-  
-  plot()
+    plot()
     
   })
   
@@ -380,65 +383,65 @@ shinyServer(function(input, output) {
     
     
     timeSeries <- timeSeries_inflation()
-   
+    
     
     plot <- function(){
-     
-    chartSeries(timeSeries,
-                name = metricName,
-                type="line",
-                theme=chartTheme('white'))
-    
-    
-    max <- round(max(timeSeries$Close),1)
-    min <- round(min(timeSeries$Close),1)
-    mean <- round(mean(timeSeries$Close),1)
-    
-    
-    max <- paste("Max.:", max)  
-    min <- paste("Min.:", min)
-    mean <- paste("Avg.:", mean)
-    #######################################################
-    
-    timeSeries <- as.data.frame(timeSeries)
-    timeSeries$date <- as_date(row.names(timeSeries))
-    
-    max_date <- max(timeSeries$date)
-    min_date <- min(timeSeries$date)
-    
-    ### Difference selected period
-    
-    one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
-    
-    period <- max_date - min_date
-    period
-    
-    change <- (one$Close[2] - one$Close[1]) / one$Close[1]
-    change <- round(change*100,2)
-    
-    change <- paste("Period Change:", change, "%")
-    
-    ############################################################################
-    ## one year
-    
-    max_date <- max(timeSeries$date)
-    one_year <- max_date -365
-    
-    one_year <- subset(timeSeries, timeSeries$date >=  one_year)
-    
-    one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
-    
-    change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
-    change_1year*100
-    
-    if(input$end_inflation - input$start_inflation >= 365){
-      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
-    }else{change_1year <-  paste("1Y Change:", "NA")}
-    
-    text <- paste(max, min, mean, change, change_1year, sep = "     ")
-    
-    mtext(text, side=1, outer=FALSE, cex = 0.75)
-    
+      
+      chartSeries(timeSeries,
+                  name = metricName,
+                  type="line",
+                  theme=chartTheme('white'))
+      
+      
+      max <- round(max(timeSeries$Close),1)
+      min <- round(min(timeSeries$Close),1)
+      mean <- round(mean(timeSeries$Close),1)
+      
+      
+      max <- paste("Max.:", max)  
+      min <- paste("Min.:", min)
+      mean <- paste("Avg.:", mean)
+      #######################################################
+      
+      timeSeries <- as.data.frame(timeSeries)
+      timeSeries$date <- as_date(row.names(timeSeries))
+      
+      max_date <- max(timeSeries$date)
+      min_date <- min(timeSeries$date)
+      
+      ### Difference selected period
+      
+      one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
+      
+      period <- max_date - min_date
+      period
+      
+      change <- (one$Close[2] - one$Close[1]) / one$Close[1]
+      change <- round(change*100,2)
+      
+      change <- paste("Period Change:", change, "%")
+      
+      ############################################################################
+      ## one year
+      
+      max_date <- max(timeSeries$date)
+      one_year <- max_date -365
+      
+      one_year <- subset(timeSeries, timeSeries$date >=  one_year)
+      
+      one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
+      
+      change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
+      change_1year*100
+      
+      if(input$end_inflation - input$start_inflation >= 365){
+        change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+      }else{change_1year <-  paste("1Y Change:", "NA")}
+      
+      text <- paste(max, min, mean, change, change_1year, sep = "     ")
+      
+      mtext(text, side=1, outer=FALSE, cex = 0.75)
+      
     }
     
     plot()
@@ -482,74 +485,74 @@ shinyServer(function(input, output) {
     
     
     timeSeries <-timeSeries_currency()
- 
+    
     plot <- function(){
-       
-    chartSeries(timeSeries,
-                name = metricName,
-                type="line",
-                theme=chartTheme('white'))
-    
-    
-    max <- round(max(timeSeries$Close),1)
-    min <- round(min(timeSeries$Close),1)
-    mean <- round(mean(timeSeries$Close),1)
-    
-    
-    max <- paste("Max.:", max)  
-    min <- paste("Min.:", min)
-    mean <- paste("Avg.:", mean)
-    #######################################################
-    
-    timeSeries <- as.data.frame(timeSeries)
-    timeSeries$date <- as_date(row.names(timeSeries))
-    
-    max_date <- max(timeSeries$date)
-    min_date <- min(timeSeries$date)
-    
-    ### Difference selected period
-    
-    one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
-    
-    period <- max_date - min_date
-    period
-    
-    change <- (one$Close[2] - one$Close[1]) / one$Close[1]
-    change <- round(change*100,2)
-    
-    change <- paste("Period Change:", change, "%")
-    
-    ############################################################################
-    ## one year
-    
-    max_date <- max(timeSeries$date)
-    one_year <- max_date -365
-    
-    one_year <- subset(timeSeries, timeSeries$date >=  one_year)
-    
-    one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
-    
-    change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
-    change_1year*100
-    
-    if(input$end_currency - input$start_currency >= 365){
-      change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
-    }else{change_1year <-  paste("1Y Change:", "NA")}
-    
-    text <- paste(max, min, mean, change, change_1year, sep = "     ")
-    
-    mtext(text, side=1, outer=FALSE, cex = 0.75)
+      
+      chartSeries(timeSeries,
+                  name = metricName,
+                  type="line",
+                  theme=chartTheme('white'))
+      
+      
+      max <- round(max(timeSeries$Close),1)
+      min <- round(min(timeSeries$Close),1)
+      mean <- round(mean(timeSeries$Close),1)
+      
+      
+      max <- paste("Max.:", max)  
+      min <- paste("Min.:", min)
+      mean <- paste("Avg.:", mean)
+      #######################################################
+      
+      timeSeries <- as.data.frame(timeSeries)
+      timeSeries$date <- as_date(row.names(timeSeries))
+      
+      max_date <- max(timeSeries$date)
+      min_date <- min(timeSeries$date)
+      
+      ### Difference selected period
+      
+      one <- subset(timeSeries, timeSeries$date == max_date | timeSeries$date == min_date)
+      
+      period <- max_date - min_date
+      period
+      
+      change <- (one$Close[2] - one$Close[1]) / one$Close[1]
+      change <- round(change*100,2)
+      
+      change <- paste("Period Change:", change, "%")
+      
+      ############################################################################
+      ## one year
+      
+      max_date <- max(timeSeries$date)
+      one_year <- max_date -365
+      
+      one_year <- subset(timeSeries, timeSeries$date >=  one_year)
+      
+      one_year <- subset(one_year, one_year$date == min(one_year$date) | one_year$date == max(one_year$date))
+      
+      change_1year <- (one_year$Close[2] - one_year$Close[1])/one_year$Close[1]
+      change_1year*100
+      
+      if(input$end_currency - input$start_currency >= 365){
+        change_1year <-  paste("1Y Change:", round(change_1year*100,2), "%")
+      }else{change_1year <-  paste("1Y Change:", "NA")}
+      
+      text <- paste(max, min, mean, change, change_1year, sep = "     ")
+      
+      mtext(text, side=1, outer=FALSE, cex = 0.75)
     }
     
     plot()
   })
- 
+  
   ## sixth Tab: Liquidity
   
   
   timeSeries_liquidity <- reactive({
     
-     
+    
     timeSeries <- fredr(input$metric_liquidity, 
                         observation_start = input$start_liquidity,
                         observation_end = input$end_liquidity) %>%
