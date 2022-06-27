@@ -21,8 +21,7 @@ shinyServer(function(input, output) {
   
   timeSeries_sp_val <- reactive({
     
-    
-    days <- input$end_sp_val -input$start_sp_val
+    days <- input$end_sp_val - input$start_sp_val
     
     metricName2 <- ifelse(input$metric_SP_valuation == "S&P500", "SP500",
                           ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM, -", days,"D,0,D)", sep=""),
@@ -32,6 +31,10 @@ shinyServer(function(input, output) {
     
     
     if(input$metric_SP_valuation == "S&P500"){
+      #timeSeries <- fredr(metricName2) %>%
+      #drop_na() %>%
+      # select(1,3) %>%
+      # rename(Close = 2)
       timeSeries <- fredr(metricName2, 
                           observation_start = input$start_sp_val,
                           observation_end = input$end_sp_val) %>%
@@ -45,19 +48,16 @@ shinyServer(function(input, output) {
         drop_na() %>%
         select(1,2) %>%
         rename(Close = 2)
+      timeSeries <- as_tibble(timeSeries)
     }
     
-    
-    
-    
     timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
-    
-    
+
   })
   
   output$distPlot_sp_val <- renderPlot({
     
-    days <- input$end_sp_val -input$start_sp_val
+    days <- input$end_sp_val - input$start_sp_val
     
     metricName <- ifelse(input$metric_SP_valuation == "S&P500", "S&P500 - Valuation",
                          ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM,-", days,"D,0,D)", sep=""),
@@ -141,30 +141,34 @@ shinyServer(function(input, output) {
     
     days <- input$end_sp_growth-input$start_sp_growth
     
-    metricName2 <- ifelse(input$metric_SP_growth == "Sales Growth", paste("FG_SALES_1YGR(",days, "D,0,0)", sep = ""),
-                          ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
-                                 ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
+    metricName2 <- ifelse(input$metric_SP_growth == "EV/Sales-LTM", paste("FMA_EVAL_SALES(LTMA,0,-", days,"D,)", sep = ""),
+                          ifelse(input$metric_SP_growth == "EV/Sales-NTM", paste("FMA_EVAL_SALES(NTMA,0,-", days, "D,D)", sep = ""),
+                                ifelse(input$metric_SP_growth == "EPS-LTM", paste("FMA_EPS(LTM,0,-", days, "D)", sep = ""),
+                                      ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,-", days,"D,D)", sep= ""),NULL))))
     
-    timeSeries <-  FSquery("SP500", metricName2) %>%
+    timeSeries <-  FSquery("SP50", metricName2) %>%
       drop_na() %>%
-      select(1,3) %>%
+      select(1,2) %>%
       rename(Close = 2)
     
-    timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
+    timeSeries <- as_tibble(timeSeries)
     
+    timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
+
     
     
   })
   
-  
+
   output$distPlot_sp_growth <- renderPlot({
     
     timeSeries <- timeSeries_sp_growth()
     days <- input$end_sp_growth-input$start_sp_growth
     
-    metricName <- ifelse(input$metric_SP_growth == "Sales Growth", paste("FG_SALES_1YGR(",days, "D,0,0)", sep = ""),
-                         ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,",days, "D,D)", sep = ""),
-                                ifelse(input$metric_SP_growth == "EPS-LMT", paste("FMA_EPS(LTM,0,",days,"D,D)", sep= ""),NULL)))
+    metricName <- ifelse(input$metric_SP_growth == "EV/Sales-LTM", paste("FMA_EVAL_SALES(LTMA,0,-", days,"D,)", sep = ""),
+                         ifelse(input$metric_SP_growth == "EV/Sales-NTM", paste("FMA_EVAL_SALES(NTMA,0,-", days, "D,D)", sep = ""),
+                               ifelse(input$metric_SP_growth == "EPS-LTM", paste("FMA_EPS(LTM,0,-", days, "D)", sep = ""),
+                                      ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,-", days,"D,D)", sep= ""),NULL))))
     plot <- function(){
       
       chartSeries(timeSeries,
