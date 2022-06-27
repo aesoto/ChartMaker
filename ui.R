@@ -50,8 +50,8 @@ shinyUI(fluidPage(
                       ),
                       actionButton("go", "Print", onclick = "$('#distPlot_sp_val').print();")
                ),
-              
-              
+               
+               
                column(width = 10,
                       br(),
                       br(),
@@ -63,7 +63,7 @@ shinyUI(fluidPage(
     
     ## Second Tab: S&P - Growth
     
-  
+    
     tabPanel("S&P500 - Growth",
              
              tags$head(tags$script(src = "https://cdnjs.cloudflare.com/ajax/libs/jQuery.print/1.6.0/jQuery.print.min.js")),
@@ -73,9 +73,10 @@ shinyUI(fluidPage(
                       awesomeRadio(
                         inputId = "metric_SP_growth",
                         label = "Metric",
-                        choices = c("Sales Growth" = "Sales Growth",
-                                    "EPS-NTM" = "EPS-NTM" ,
-                                    "EPS-LMT" = "EPS-LMT"),
+                        choices = c("EV/Sales-LTM" = "EV/Sales-LTM",
+                                    "EV/Sales-NTM" = "EV/Sales-NTM",
+                                    "EPS-LTM" = "EPS-LTM" ,
+                                    "EPS-NMT" = "EPS-NMT"),
                         selected = "Sales Growth",
                         status = "warning"
                       ),
@@ -137,7 +138,7 @@ shinyUI(fluidPage(
                       br(),
                       br(),
                       plotOutput('distPlot_rates')
-             )
+               )
              )
              
     ),
@@ -178,7 +179,7 @@ shinyUI(fluidPage(
                       br(),
                       br(),
                       plotOutput('distPlot_inflation')
-             )
+               )
              )
     ),
     
@@ -215,7 +216,7 @@ shinyUI(fluidPage(
                       br(),
                       br(),
                       plotOutput('distPlot_currency')
-             )
+               )
              )
     ),
     
@@ -232,7 +233,7 @@ shinyUI(fluidPage(
                         label = "Metric",
                         choices = c( "FF Rates" ="EFFR",
                                      "Discount Rate" = "DPCREDIT",
-                                      "Personal Loans" = "TERMCBPER24NS",
+                                     "Personal Loans" = "TERMCBPER24NS",
                                      "Prime Rate" = "DPRIME"),
                         selected = "EFFR",
                         status = "warning"
