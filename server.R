@@ -12,7 +12,7 @@ library(httr)
 library(jsonlite)
 library(xts)
 fredr_set_key('dad071a33ef9414bb0a759835d9ec507')
-source('FSquery.R') 
+#source('FSquery.R') 
 
 shinyServer(function(input, output) {
   
@@ -24,9 +24,8 @@ shinyServer(function(input, output) {
     days <- input$end_sp_val - input$start_sp_val
     
     metricName2 <- ifelse(input$metric_SP_valuation == "S&P500", "SP500",
-                          ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM, -", days,"D,0,D)", sep=""),
-                                 ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep=""),
-                                        ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-",days,"D,0,D,90,0)", sep=""),NULL))))
+                                   ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep=""),
+                                        ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-",days,"D,0,D,90,0)", sep=""),NULL)))
     
     
     
@@ -52,7 +51,7 @@ shinyServer(function(input, output) {
     }
     
     timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
-
+    
   })
   
   output$distPlot_sp_val <- renderPlot({
@@ -60,9 +59,8 @@ shinyServer(function(input, output) {
     days <- input$end_sp_val - input$start_sp_val
     
     metricName <- ifelse(input$metric_SP_valuation == "S&P500", "S&P500 - Valuation",
-                         ifelse(input$metric_SP_valuation == "EV/Sales - LTM", paste("FMA_EVAL_SALES(LTM,-", days,"D,0,D)", sep=""),
-                                ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA, -", days,"D,0,D)", sep=""),
-                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-", days,"D,0,D,90,0)", sep=""),NULL))))
+                            ifelse(input$metric_SP_valuation == "PE - LTM", "PE - LTM",
+                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-", days,"D,0,D,90,0)", sep=""),NULL)))
     
     
     timeSeries <- timeSeries_sp_val()
@@ -143,8 +141,8 @@ shinyServer(function(input, output) {
     
     metricName2 <- ifelse(input$metric_SP_growth == "EV/Sales-LTM", paste("FMA_EVAL_SALES(LTMA,0,-", days,"D,)", sep = ""),
                           ifelse(input$metric_SP_growth == "EV/Sales-NTM", paste("FMA_EVAL_SALES(NTMA,0,-", days, "D,D)", sep = ""),
-                                ifelse(input$metric_SP_growth == "EPS-LTM", paste("FMA_EPS(LTM,0,-", days, "D)", sep = ""),
-                                      ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,-", days,"D,D)", sep= ""),NULL))))
+                                 ifelse(input$metric_SP_growth == "EPS-LTM", paste("FMA_EPS(LTM,0,-", days, "D)", sep = ""),
+                                        ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,-", days,"D,D)", sep= ""),NULL))))
     
     timeSeries <-  FSquery("SP50", metricName2) %>%
       drop_na() %>%
@@ -154,21 +152,21 @@ shinyServer(function(input, output) {
     timeSeries <- as_tibble(timeSeries)
     
     timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
-
+    
     
     
   })
   
-
+  
   output$distPlot_sp_growth <- renderPlot({
     
     timeSeries <- timeSeries_sp_growth()
     days <- input$end_sp_growth-input$start_sp_growth
     
-    metricName <- ifelse(input$metric_SP_growth == "EV/Sales-LTM", paste("FMA_EVAL_SALES(LTMA,0,-", days,"D,)", sep = ""),
-                         ifelse(input$metric_SP_growth == "EV/Sales-NTM", paste("FMA_EVAL_SALES(NTMA,0,-", days, "D,D)", sep = ""),
-                               ifelse(input$metric_SP_growth == "EPS-LTM", paste("FMA_EPS(LTM,0,-", days, "D)", sep = ""),
-                                      ifelse(input$metric_SP_growth == "EPS-NTM", paste("FMA_EPS(NTMA,0,-", days,"D,D)", sep= ""),NULL))))
+    metricName <- ifelse(input$metric_SP_growth == "EV/Sales-LTM", "EV/Sales-LTM",
+                         ifelse(input$metric_SP_growth == "EV/Sales-NTM", "EV/Sales-NTM",
+                                ifelse(input$metric_SP_growth == "EPS-LTM", "EPS-LTM",
+                                       ifelse(input$metric_SP_growth == "EPS-NTM", "EPS-NTM",NULL))))
     plot <- function(){
       
       chartSeries(timeSeries,
@@ -356,7 +354,9 @@ shinyServer(function(input, output) {
                                 ifelse(input$metric_inflation == 'T5YIE', "5Y Breakeven Inflation",
                                        ifelse(input$metric_inflation == 'T5YIFR', "5,5 Forward Inflation",
                                               ifelse(input$metric_inflation  == "CPIAUCSL", "CPI",
-                                                     ifelse(input$metric_inflation == "PPIACO",  "PPI",NULL))))))
+                                                     ifelse(input$metric_inflation == "PPIACO",  "PPI",
+                                                            ifelse(input$metric_inflation == "UMCSENT", "Consumer Sentiment",
+                                                                   ifelse(input$metric_inflation == "MICH", "Consumer Expectations",NULL))))))))
     
     
     timeSeries <- fredr(input$metric_inflation, 
@@ -383,7 +383,9 @@ shinyServer(function(input, output) {
                                 ifelse(input$metric_inflation == 'T5YIE', "5Y Breakeven Inflation",
                                        ifelse(input$metric_inflation == 'T5YIFR', "5,5 Forward Inflation",
                                               ifelse(input$metric_inflation  == "CPIAUCSL", "CPI",
-                                                     ifelse(input$metric_inflation == "PPIACO",  "PPI",NULL))))))
+                                                     ifelse(input$metric_inflation == "PPIACO",  "PPI",
+                                                            ifelse(input$metric_inflation == "UMCSENT", "Consumer Sentiment",
+                                                                   ifelse(input$metric_inflation == "MICH", "Consumer Expectations",NULL))))))))
     
     
     timeSeries <- timeSeries_inflation()
