@@ -11,6 +11,7 @@ library(here)
 library(httr)
 library(jsonlite)
 library(xts)
+source('FSquery.R')
 fredr_set_key('dad071a33ef9414bb0a759835d9ec507')
 #source('FSquery.R') 
 
@@ -24,8 +25,8 @@ shinyServer(function(input, output) {
     days <- input$end_sp_val - input$start_sp_val
     
     metricName2 <- ifelse(input$metric_SP_valuation == "S&P500", "SP500",
-                                   ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep=""),
-                                        ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-",days,"D,0,D,90,0)", sep=""),NULL)))
+                          ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep=""),
+                                 ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-",days,"D,0,D,90,0)", sep=""),NULL)))
     
     
     
@@ -59,8 +60,9 @@ shinyServer(function(input, output) {
     days <- input$end_sp_val - input$start_sp_val
     
     metricName <- ifelse(input$metric_SP_valuation == "S&P500", "S&P500 - Valuation",
-                            ifelse(input$metric_SP_valuation == "PE - LTM", "PE - LTM",
-                                       ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-", days,"D,0,D,90,0)", sep=""),NULL)))
+                         ifelse(input$metric_SP_valuation == "PE - LTM", "PE - LTM",
+                                ifelse(input$metric_SP_valuation == "PE - NTM", "PE - NTM")))
+                                #ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-", days,"D,0,D,90,0)", sep=""),NULL)))
     
     
     timeSeries <- timeSeries_sp_val()
@@ -160,13 +162,16 @@ shinyServer(function(input, output) {
   
   output$distPlot_sp_growth <- renderPlot({
     
-    timeSeries <- timeSeries_sp_growth()
-    days <- input$end_sp_growth-input$start_sp_growth
     
-    metricName <- ifelse(input$metric_SP_growth == "EV/Sales-LTM", "EV/Sales-LTM",
-                         ifelse(input$metric_SP_growth == "EV/Sales-NTM", "EV/Sales-NTM",
-                                ifelse(input$metric_SP_growth == "EPS-LTM", "EPS-LTM",
-                                       ifelse(input$metric_SP_growth == "EPS-NTM", "EPS-NTM",NULL))))
+    days <- input$end_sp_growth - input$start_sp_growth
+    
+    metricName <- ifelse(input$metric_SP_growth == "EV/Sales-LTM", "EV/Sales - LTM",
+                         ifelse(input$metric_SP_growth == "EV/Sales-NTM", "EV/Sales - NTM",
+                                ifelse(input$metric_SP_growth == "EPS-LTM", "EPS - LTM",
+                                       ifelse(input$metric_SP_growth == "EPS-NTM", "EPS - NTM"))))
+    
+    timeSeries <- timeSeries_sp_growth()
+    
     plot <- function(){
       
       chartSeries(timeSeries,
