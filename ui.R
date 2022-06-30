@@ -8,6 +8,7 @@ library(shinyWidgets)
 library(shiny)
 library(fredr)
 library(here)
+
 fredr_set_key('dad071a33ef9414bb0a759835d9ec507')
 
 
@@ -75,7 +76,7 @@ shinyUI(fluidPage(
                         choices = c("EV/Sales-LTM" = "EV/Sales-LTM",
                                     "EV/Sales-NTM" = "EV/Sales-NTM",
                                     "EPS-LTM" = "EPS-LTM" ,
-                                    "EPS-NMT" = "EPS-NMT"),
+                                    "EPS-NTM" = "EPS-NTM"),
                         selected = "EV/Sales-LTM",
                         status = "warning"
                       ),
@@ -153,14 +154,14 @@ shinyUI(fluidPage(
                       awesomeRadio(
                         inputId = "metric_inflation",
                         label = "Metric",
-                        choices = c( "5Y Breakeven Inf." ='T5YIE',
-                                     "10Y Breakeven Inf." ='T10YIE',
+                        choices = c( "5Y BE Inf" ='T5YIE',
+                                     "10Y BE Inf" ='T10YIE',
                                      "10Y TIPS" = 'DFII10',
-                                     "5,5 Forward Inf."= 'T5YIFR',
+                                     "5,5 Fwd Inf."= 'T5YIFR',
                                      "CPI" = "CPIAUCSL",
                                      "PPI" = "PPIACO",
-                                     "Consumer Sent." = "UMCSENT",
-                                     "Consumer Exp." = "MICH"),
+                                     "Cons Sent" = "UMCSENT",
+                                     "Cons Exp" = "MICH"),
                         selected = "DFII10",
                         status = "warning"
                       ),
@@ -196,8 +197,8 @@ shinyUI(fluidPage(
                       awesomeRadio(
                         inputId = "metric_currency",
                         label = "Metric",
-                        choices = c( "USD Index-Adv" ='DTWEXAFEGS',
-                                     "USD Index-Broad" ='DTWEXBGS'),
+                        choices = c( "USD Adv" ='DTWEXAFEGS',
+                                     "USD Broad" ='DTWEXBGS'),
                         selected = "DTWEXAFEGS",
                         status = "warning"
                       ),
@@ -233,8 +234,8 @@ shinyUI(fluidPage(
                         inputId = "metric_liquidity",
                         label = "Metric",
                         choices = c( "FF Rates" ="EFFR",
-                                     "Discount Rate" = "DPCREDIT",
-                                     "Personal Loans" = "TERMCBPER24NS",
+                                     "Disc Rate" = "DPCREDIT",
+                                     "Pers Loans" = "TERMCBPER24NS",
                                      "Prime Rate" = "DPRIME"),
                         selected = "EFFR",
                         status = "warning"
