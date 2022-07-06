@@ -13,7 +13,7 @@ library(jsonlite)
 library(xts)
 source('FSquery.R')
 fredr_set_key('dad071a33ef9414bb0a759835d9ec507')
-#source('FSquery.R') 
+ 
 
 shinyServer(function(input, output) {
   
@@ -26,7 +26,8 @@ shinyServer(function(input, output) {
     
     metricName2 <- ifelse(input$metric_SP_valuation == "S&P500", "SP500",
                           ifelse(input$metric_SP_valuation == "PE - LTM", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep=""),
-                                 ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-",days,"D,0,D,90,0)", sep=""),NULL)))
+                                 ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-",days,"D,0,D,90,0)", sep=""),
+                                        ifelse(input$metric_SP_valuation == "Eqty Prem", "Eqty Prem",NULL))))
     
     
     
@@ -43,13 +44,48 @@ shinyServer(function(input, output) {
         rename(Close = 2)
     }
     
-    if(input$metric_SP_valuation != "S&P500"){
+    if(input$metric_SP_valuation == "Eqty Prem"){
+      
+      timeSeries1 <-  FSquery("SP50", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep="")) %>%
+        drop_na() %>%
+        select(1,2) %>%
+        rename(Close = 2)
+      
+      timeSeries1 <- 1/as_tibble(timeSeries1)
+      
+      
+      timeSeries1 <-  FSquery("SP50", paste("FMA_PE(LTMA,-", days,"D,0,D)", sep="")) %>%
+        drop_na() %>%
+        select(1,2) %>%
+        rename(Close = 2)
+      
+      timeSeries1 <- 1/as_tibble(timeSeries1)
+      
+      
+      timeSeries2 <- fredr('DFII10', 
+                          observation_start = input$start_sp_val,
+                          observation_end = input$end_sp_val) %>%
+        drop_na() %>%
+        select(1,3) %>%
+        rename(Close = 2)
+      
+      timeSeries2 <- xts(timeSeries2[,2], order.by = timeSeries2$date)
+      
+      
+      timeSeries <- timeSeries1/timeSeries2
+      
+      }
+    
+    if(input$metric_SP_valuation != c("S&P500","Eqty Prem")){
       timeSeries <-  FSquery("SP50", metricName2) %>%
         drop_na() %>%
         select(1,2) %>%
         rename(Close = 2)
       timeSeries <- as_tibble(timeSeries)
     }
+    
+    
+    
     
     timeSeries <- xts(timeSeries[,2], order.by = timeSeries$date)
     
@@ -61,8 +97,9 @@ shinyServer(function(input, output) {
     
     metricName <- ifelse(input$metric_SP_valuation == "S&P500", "S&P500 - Valuation",
                          ifelse(input$metric_SP_valuation == "PE - LTM", "PE - LTM",
-                                ifelse(input$metric_SP_valuation == "PE - NTM", "PE - NTM")))
-                                #ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-", days,"D,0,D,90,0)", sep=""),NULL)))
+                                ifelse(input$metric_SP_valuation == "PE - NTM", "PE - NTM",
+                                       ifelse(input$metric_SP_valuation == "Eqty Prem", "Eqty Prem",NULL ))))
+    #ifelse(input$metric_SP_valuation == "PE - NTM", paste("FG_PE_NTM(-", days,"D,0,D,90,0)", sep=""),NULL)))
     
     
     timeSeries <- timeSeries_sp_val()
