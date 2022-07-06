@@ -34,7 +34,8 @@ shinyUI(fluidPage(
                         label = "Metric",
                         choices = c("S&P500" = 'S&P500' ,
                                     "PE - LTM" = "PE - LTM",
-                                    "PE - NTM"= "PE - NTM"),
+                                    "PE - NTM"= "PE - NTM",
+                                    "Eqty Prem" = "Eqty Prem"),
                         selected = "S&P500",
                         status = "warning"
                       ),
